@@ -15,10 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
-from .views import UserPublicacionAPIView  # Asegúrate de tener la ruta correcta a tu vista
+from django.urls import path,include
+from publicaciones import urls as publicaciones_urls
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Ruta para acceder al admin de Django
-    path('user/<int:user_id>/publicaciones/', UserPublicacionAPIView.as_view(), name='user-publicaciones'),  # Ruta para ver publicaciones de un usuario
+    path('admin/', admin.site.urls),
+    path('api/publicaciones/',include(publicaciones_urls))
 ]
