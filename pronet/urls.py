@@ -16,9 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from publicaciones import urls as publicaciones_urls
+from usuarios import urls as usuarios_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/publicaciones/',include(publicaciones_urls))
+    path('api/usuarios/',include(usuarios_urls))
 ]
