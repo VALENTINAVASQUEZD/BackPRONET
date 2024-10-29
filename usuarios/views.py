@@ -1,7 +1,6 @@
 from rest_framework import status
 from rest_framework.response import Response
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+
 from rest_framework.views import APIView
 from .models import PerfilUsuario
 from .serializer import RegistroUsuarioSerializer, LoginUsuarioSerializer
@@ -17,7 +16,6 @@ class RegistroUsuarioAPIView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-@method_decorator(csrf_exempt, name='dispatch')
 class LoginUsuarioAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LoginUsuarioSerializer(data=request.data)
@@ -28,7 +26,7 @@ class LoginUsuarioAPIView(APIView):
             try:
                 usuario = PerfilUsuario.objects.get(correo=correo)
                 if usuario.check_password(contraseña):
-                    # Aquí puedes agregar lógica para generar un token o iniciar sesión
+                    
                     return Response(
                         {'mensaje': 'Inicio de sesión exitoso'},
                         status=status.HTTP_200_OK
