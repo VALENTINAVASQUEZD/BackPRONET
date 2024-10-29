@@ -6,4 +6,10 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         model = PerfilUsuario
         fields = ['username', 'correo', 'contraseña']
         extra_kwargs = {'contraseña': {'write_only': True}}
+        
+class LoginUsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PerfilUsuario
+        fields = ['correo', 'contraseña']
+        extra_kwargs = {'contraseña': {'write_only': True}}
 
