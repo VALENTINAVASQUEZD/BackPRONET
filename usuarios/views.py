@@ -1,14 +1,16 @@
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from .serializers import RegistroUsuarioSerializer, LoginSerializer, UsuarioSerializer, EditarPerfilSerializer
 from django.contrib.auth import authenticate
-from .serializers import RegistroUsuarioSerializer, UsuarioSerializer, LoginSerializer, EditarPerfilSerializer
+from django.contrib.auth.models import User
 from .models import PerfilUsuario
-from rest_framework.permissions import IsAuthenticated
 from .authentication import UserIDAuthentication
 
 class RegistroUsuarioAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
         serializer = RegistroUsuarioSerializer(data=request.data)
         if serializer.is_valid():
@@ -21,13 +23,9 @@ class RegistroUsuarioAPIView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ListarUsuariosAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        usuarios = User.objects.all()
-        serializer = UsuarioSerializer(usuarios, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
 class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -52,9 +50,17 @@ class LoginAPIView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ListarUsuariosAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow unauthenticated access
+
+    def get(self, request, *args, **kwargs):
+        usuarios = User.objects.all()
+        serializer = UsuarioSerializer(usuarios, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class PerfilUsuarioAPIView(APIView):
-    authentication_classes = [UserIDAuthentication]
-    permission_classes = [IsAuthenticated]
+    #authentication_classes = [UserIDAuthentication]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         try:
