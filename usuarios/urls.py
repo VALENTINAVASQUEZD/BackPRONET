@@ -1,10 +1,7 @@
 from django.urls import path
-from .views import RegistroUsuarioAPIView
-from .views import LoginUsuarioAPIView
-from django.views.decorators.csrf import csrf_exempt
+from .views import LoginAPIView, PerfilUsuarioAPIView
 
 urlpatterns = [
-    path('registro', RegistroUsuarioAPIView.as_view(), name='registro-usuario'),
-    path('list', RegistroUsuarioAPIView.as_view(),),
-    path('login', csrf_exempt(LoginUsuarioAPIView.as_view()), name='login-usuario'),
+    path('login/', LoginAPIView.as_view(), name='login_usuario'),
+    path('perfil/', PerfilUsuarioAPIView.as_view(), name='perfil_usuario'),
 ]
