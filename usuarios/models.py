@@ -1,10 +1,21 @@
 from django.db import models
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from datetime import date
+
+def validar_edad_minima(fecha_nacimiento):
+    if isinstance(fecha_nacimiento, str):
+        return
+    hoy = date.today()
+    edad = hoy.year - fecha_nacimiento.year - ((hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
+    if edad < 13:
+        raise ValidationError('El usuario debe tener al menos 13 años de edad.')
 
 class PerfilUsuario(models.Model):
-    correo = models.EmailField(max_length=100, unique=True)
-    contraseña = models.CharField(max_length=128)
-    username = models.CharField(max_length=150, unique=True, default='usuario_inactivo')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100)
+    fecha_nacimiento = models.DateField(validators=[validar_edad_minima])
 
-    def check_password(self, raw_password):
-            return check_password(raw_password, self.contraseña)
+    def __str__(self):
+        return f'{self.user.username} - Perfil'
