@@ -35,18 +35,3 @@ class LoginAPIView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-class PerfilUsuarioAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        try:
-            perfil = PerfilUsuario.objects.get(user=request.user)
-            serializer = UsuarioSerializer(request.user)
-            return Response(serializer.data)
-        except PerfilUsuario.DoesNotExist:
-            return Response(
-                {"error": "Perfil no encontrado"}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
