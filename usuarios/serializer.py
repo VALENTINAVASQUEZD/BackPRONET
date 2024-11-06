@@ -36,3 +36,12 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
+    
+class UsuarioSerializer(serializers.ModelSerializer):
+    nombre = serializers.CharField(source='perfilusuario.nombre')
+    apellido = serializers.CharField(source='perfilusuario.apellido')
+    fecha_nacimiento = serializers.DateField(source='perfilusuario.fecha_nacimiento')
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'nombre', 'apellido', 'fecha_nacimiento']
