@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializer import LoginSerializer, RegistroUsuarioSerializer, UsuarioSerializer 
+from .serializer import EditarPerfilSerializer, LoginSerializer, RegistroUsuarioSerializer, UsuarioSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .models import PerfilUsuario
@@ -54,7 +54,7 @@ class LoginAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ListarUsuariosAPIView(APIView):
-    permission_classes = [AllowAny]  
+    permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         usuarios = User.objects.all()
@@ -72,7 +72,7 @@ class PerfilUsuarioAPIView(APIView):
             return Response(serializer.data)
         except PerfilUsuario.DoesNotExist:
             return Response(
-                {"error": "Perfil no encontrado"}, 
+                {"error": "Perfil no encontrado"},
                 status=status.HTTP_404_NOT_FOUND
             )
 
@@ -97,6 +97,6 @@ class PerfilUsuarioAPIView(APIView):
             
         except PerfilUsuario.DoesNotExist:
             return Response(
-                {"error": "Perfil no encontrado"}, 
+                {"error": "Perfil no encontrado"},
                 status=status.HTTP_404_NOT_FOUND
             )
