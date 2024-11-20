@@ -19,3 +19,22 @@ class PerfilUsuario(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - Perfil'
+
+class InformacionAcademica(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    institucion = models.CharField(max_length=255)
+    carrera = models.CharField(max_length=255)
+    especialidades = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.carrera}'
+
+class InformacionLaboral(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    empresa = models.CharField(max_length=255)
+    puesto = models.CharField(max_length=255)
+    descripcion = models.TextField(blank=True, null=True)
+    horas_trabajadas = models.PositiveIntegerField(default=0)  # Nuevo campo
+
+    def __str__(self):
+        return f'{self.user.username} - {self.puesto}'

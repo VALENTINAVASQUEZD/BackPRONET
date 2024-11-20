@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import PerfilUsuario
+from .models import PerfilUsuario, InformacionAcademica, InformacionLaboral
 from datetime import date
+from django.core.exceptions import ValidationError
+
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     nombre = serializers.CharField(max_length=100)
@@ -83,3 +85,41 @@ class EditarPerfilSerializer(serializers.ModelSerializer):
         instance.fecha_nacimiento = validated_data.get('fecha_nacimiento', instance.fecha_nacimiento)
         instance.save()
         return instance
+
+
+class InformacionAcademicaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InformacionAcademica
+        fields = ['id', 'user', 'institucion', 'carrera', 'especialidades']
+        read_only_fields = ['id', 'user']
+
+    def validate_institucion(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("La institución no puede estar vacía.")
+        return value
+
+    def validate_carrera(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("La carrera no puede estar vacía.")
+        return value
+
+class InformacionLaboralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InformacionLaboral
+        fields = ['id', 'user', 'empresa', 'puesto', 'descripcion', 'horas_trabajadas']
+        read_only_fields = ['id', 'user']
+
+    def validate_empresa(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("El nombre de la empresa no puede estar vacío.")
+        return value
+
+    def validate_puesto(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("El puesto no puede estar vacío.")
+        return value
+
+    def validate_horas_trabajadas(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Las horas trabajadas no pueden ser negativas.")
+        return value

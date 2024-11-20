@@ -1,11 +1,11 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import RegistroUsuarioSerializer, LoginSerializer, UsuarioSerializer, EditarPerfilSerializer
+from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import PerfilUsuario
-from rest_framework.permissions import AllowAny
+from .serializers import RegistroUsuarioSerializer,LoginSerializer,UsuarioSerializer,EditarPerfilSerializer,InformacionAcademicaSerializer,InformacionLaboralSerializer
+from .models import PerfilUsuario, InformacionAcademica, InformacionLaboral
 
 class RegistroUsuarioAPIView(APIView):
     def post(self, request, *args, **kwargs):
@@ -103,3 +103,88 @@ class PerfilUsuarioAPIView(APIView):
             
         except PerfilUsuario.DoesNotExist:
             return Response({"error": "Perfil no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+class InformacionAcademicaAPIView(APIView):
+
+
+    def get(self, request):
+        user = request.user
+        info_academica = InformacionAcademica.objects.filter(user=user)
+        serializer = InformacionAcademicaSerializer(info_academica, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = InformacionAcademicaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response({
+                "mensaje": "Información académica registrada exitosamente",
+                **serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DetalleInformacionAcademicaAPIView(APIView):
+
+
+    def put(self, request, pk):
+        try:
+            info_academica = InformacionAcademica.objects.get(pk=pk, user=request.user)
+        except InformacionAcademica.DoesNotExist:
+            return Response({"error": "Registro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = InformacionAcademicaSerializer(info_academica, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            info_academica = InformacionAcademica.objects.get(pk=pk, user=request.user)
+            info_academica.delete()
+            return Response({"mensaje": "Registro eliminado exitosamente"}, status=status.HTTP_204_NO_CONTENT)
+        except InformacionAcademica.DoesNotExist:
+            return Response({"error": "Registro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class InformacionLaboralAPIView(APIView):
+
+
+    def get(self, request):
+        user = request.user
+        info_laboral = InformacionLaboral.objects.filter(user=user)
+        serializer = InformacionLaboralSerializer(info_laboral, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = InformacionLaboralSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response({
+                "mensaje": "Información laboral registrada exitosamente",
+                **serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DetalleInformacionLaboralAPIView(APIView):
+
+
+    def put(self, request, pk):
+        try:
+            info_laboral = InformacionLaboral.objects.get(pk=pk, user=request.user)
+        except InformacionLaboral.DoesNotExist:
+            return Response({"error": "Registro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = InformacionLaboralSerializer(info_laboral, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            info_laboral = InformacionLaboral.objects.get(pk=pk, user=request.user)
+            info_laboral.delete()
+            return Response({"mensaje": "Registro eliminado exitosamente"}, status=status.HTTP_204_NO_CONTENT)
+        except InformacionLaboral.DoesNotExist:
+            return Response({"error": "Registro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
