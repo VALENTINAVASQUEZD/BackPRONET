@@ -1,7 +1,7 @@
-from django.forms import ValidationError
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import PerfilUsuario
+from datetime import date
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     nombre = serializers.CharField(max_length=100)
@@ -13,6 +13,13 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'password', 'nombre', 'apellido', 'fecha_nacimiento']
         extra_kwargs = {'password': {'write_only': True}}
+
+    def validate_fecha_nacimiento(self, value):
+        hoy = date.today()
+        edad = hoy.year - value.year - ((hoy.month, hoy.day) < (value.month, value.day))
+        if edad < 13:
+            raise serializers.ValidationError("El usuario debe tener al menos 13 años de edad.")
+        return value
 
     def create(self, validated_data):
         nombre = validated_data.pop('nombre')
@@ -33,11 +40,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         )
 
         return user
-    
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-    
+
 class UsuarioSerializer(serializers.ModelSerializer):
     nombre = serializers.CharField(source='perfilusuario.nombre')
     apellido = serializers.CharField(source='perfilusuario.apellido')
@@ -47,7 +50,9 @@ class UsuarioSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'nombre', 'apellido', 'fecha_nacimiento']
 
-        from rest_framework import serializers
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
 
 class EditarPerfilSerializer(serializers.ModelSerializer):
     class Meta:
