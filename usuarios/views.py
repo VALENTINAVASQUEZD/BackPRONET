@@ -1,10 +1,10 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import RegistroUsuarioSerializer, LoginSerializer, UsuarioSerializer, EditarPerfilSerializer
+from .serializers import RegistroUsuarioSerializer, LoginSerializer, UsuarioSerializer, EditarPerfilSerializer, InformacionAcademicaSerializer, InformacionLaboralSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import PerfilUsuario
+from .models import PerfilUsuario, InformacionLaboral, InformacionAcademica
 from rest_framework.permissions import AllowAny
 
 class RegistroUsuarioAPIView(APIView):
@@ -103,3 +103,70 @@ class PerfilUsuarioAPIView(APIView):
             
         except PerfilUsuario.DoesNotExist:
             return Response({"error": "Perfil no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+class InformacionAcademicaAPIView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        user = request.user
+        if user.is_anonymous:
+            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            info_academica = InformacionAcademica.objects.filter(user=user)
+            if not info_academica.exists():
+                return Response({"error": "Información académica no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = InformacionAcademicaSerializer(info_academica, many=True)
+            return Response(serializer.data)
+        except InformacionAcademica.DoesNotExist:
+            return Response({"error": "No hay información académica disponible"}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request):
+        user = request.user
+        if user.is_anonymous:
+            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            info_academica = InformacionAcademica.objects.create(user=user, **request.data)
+            serializer = InformacionAcademicaSerializer(info_academica)
+
+            return Response({
+                "mensaje": "Información académica creada exitosamente",
+                **serializer.data
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class InformacionLaboralAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user
+        if user.is_anonymous:
+            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            info_laboral = InformacionLaboral.objects.filter(user=user)
+            if not info_laboral.exists():
+                return Response({"error": "Información laboral no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = InformacionLaboralSerializer(info_laboral, many=True)
+            return Response(serializer.data)
+        except InformacionLaboral.DoesNotExist:
+            return Response({"error": "No hay información laboral disponible"}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request):
+        user = request.user
+        if user.is_anonymous:
+            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            info_laboral = InformacionLaboral.objects.create(user=user, **request.data)
+            serializer = InformacionLaboralSerializer(info_laboral)
+
+            return Response({
+                "mensaje": "Información laboral creada exitosamente",
+                **serializer.data
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
