@@ -1,19 +1,7 @@
 asgiref==3.8.1
 Django==5.1.1
-<<<<<<< HEAD
 django-cors-headers==4.6.0
-django-rest-framework==0.1.0
 djangorestframework==3.15.2
-<<<<<<< HEAD
-sqlparse==0.5.1
-=======
 psycopg2-binary==2.9.10
 sqlparse==0.5.1
 tzdata==2024.2
->>>>>>> feature/editar
-=======
-django-rest-framework==0.1.0
-djangorestframework==3.15.2
-sqlparse==0.5.1
-
->>>>>>> feature/publicaciones
