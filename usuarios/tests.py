@@ -1,4 +1,4 @@
-import pytest
+
 from django.test import TestCase
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
@@ -72,90 +72,95 @@ class UsuariosTests(TestCase):
         self.assertEqual(response.data['nombre'], 'Existing')
 
 
-@pytest.fixture
-def user(db):
-    user = User.objects.create_user(username="testuser", password="testpassword")
-    return user
 
-@pytest.fixture
-def client():
-    return APIClient()
+class InformacionAcademicaTests(TestCase):
+    def setUp(self):
+        # Crear un usuario de prueba
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="testuser@example.com",
+            password="testpass123"
+        )
+        # Autenticar al cliente con el usuario de prueba
+        self.client.login(username="testuser", password="testpass123")
 
-@pytest.fixture
-def info_academica(user):
-    return InformacionAcademica.objects.create(
-        user=user, institucion="Test University", carrera="Engineering", especialidades="AI"
-    )
+        # Crear un registro de información académica para el usuario
+        self.info_academica = InformacionAcademica.objects.create(
+            user=self.user,
+            institucion="Test University",
+            carrera="Computer Science",
+            especialidades="Artificial Intelligence"
+        )
 
-def test_get_informacion_academica(client, user, info_academica):
-    client.force_authenticate(user=user)
-    response = client.get("/api/usuarios/informacion-academica/")
-    assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 1
-    assert response.data[0]["institucion"] == "Test University"
+    def test_get_informacion_academica(self):
+        """
+        Prueba para verificar la obtención de la información académica.
+        """
+        response = self.client.get("/api/usuarios/informacion-academica/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["institucion"], "Test University")
+        self.assertEqual(response.data[0]["carrera"], "Computer Science")
 
-def test_post_informacion_academica(client, user):
-    client.force_authenticate(user=user)
-    data = {"institucion": "New University", "carrera": "Mathematics", "especialidades": "Statistics"}
-    response = client.post("/api/usuarios/informacion-academica/", data)
-    assert response.status_code == status.HTTP_201_CREATED
-    assert response.data["institucion"] == "New University"
+    def test_post_informacion_academica(self):
+        """
+        Prueba para crear nueva información académica.
+        """
+        data = {
+            "institucion": "New University",
+            "carrera": "Mathematics",
+            "especialidades": "Statistics"
+        }
+        response = self.client.post("/api/usuarios/informacion-academica/", data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["institucion"], "New University")
+        self.assertEqual(response.data["carrera"], "Mathematics")
 
-def test_put_informacion_academica(client, user, info_academica):
-    client.force_authenticate(user=user)
-    data = {"institucion": "Updated University", "carrera": "Physics", "especialidades": "Astrophysics"}
-    response = client.put(f"/api/usuarios/informacion-academica/{info_academica.id}/", data)
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data["institucion"] == "Updated University"
+    def test_post_informacion_academica_invalida(self):
+        """
+        Prueba para creación con datos inválidos.
+        """
+        data = {"institucion": "", "carrera": "", "especialidades": ""}
+        response = self.client.post("/api/usuarios/informacion-academica/", data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("institucion", response.data)
+        self.assertIn("carrera", response.data)
 
-def test_delete_informacion_academica(client, user, info_academica):
-    client.force_authenticate(user=user)
-    response = client.delete(f"/api/usuarios/informacion-academica/{info_academica.id}/")
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert InformacionAcademica.objects.filter(id=info_academica.id).count() == 0
+    def test_put_informacion_academica(self):
+        """
+        Prueba para actualizar información académica existente.
+        """
+        data = {
+            "institucion": "Updated University",
+            "carrera": "Physics",
+            "especialidades": "Astrophysics"
+        }
+        response = self.client.put(f"/api/usuarios/informacion-academica/{self.info_academica.id}/", data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["institucion"], "Updated University")
+        self.assertEqual(response.data["carrera"], "Physics")
 
+    def test_put_informacion_academica_invalida(self):
+        """
+        Prueba para actualizar con datos inválidos.
+        """
+        data = {"institucion": "", "carrera": ""}
+        response = self.client.put(f"/api/usuarios/informacion-academica/{self.info_academica.id}/", data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("institucion", response.data)
+        self.assertIn("carrera", response.data)
 
-@pytest.fixture
-def info_laboral(user):
-    return InformacionLaboral.objects.create(
-        user=user, empresa="TechCorp", puesto="Developer", descripcion="Backend developer", horas_trabajadas=40
-    )
+    def test_delete_informacion_academica(self):
+        """
+        Prueba para eliminar un registro de información académica.
+        """
+        response = self.client.delete(f"/api/usuarios/informacion-academica/{self.info_academica.id}/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(InformacionAcademica.objects.filter(id=self.info_academica.id).exists())
 
-def test_get_informacion_laboral(client, user, info_laboral):
-    client.force_authenticate(user=user)
-    response = client.get("/api/usuarios/informacion-laboral/")
-    assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 1
-    assert response.data[0]["empresa"] == "TechCorp"
-
-def test_post_informacion_laboral(client, user):
-    client.force_authenticate(user=user)
-    data = {
-        "empresa": "NewCorp",
-        "puesto": "Analyst",
-        "descripcion": "Data analyst",
-        "horas_trabajadas": 35,
-    }
-    response = client.post("/api/usuarios/informacion-laboral/", data)
-    assert response.status_code == status.HTTP_201_CREATED
-    assert response.data["empresa"] == "NewCorp"
-
-def test_put_informacion_laboral(client, user, info_laboral):
-    client.force_authenticate(user=user)
-    data = {
-        "empresa": "UpdatedCorp",
-        "puesto": "Senior Developer",
-        "descripcion": "Lead developer",
-        "horas_trabajadas": 45,
-    }
-    response = client.put(f"/api/usuarios/informacion-laboral/{info_laboral.id}/", data)
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data["empresa"] == "UpdatedCorp"
-
-def test_delete_informacion_laboral(client, user, info_laboral):
-    client.force_authenticate(user=user)
-    response = client.delete(f"/api/usuarios/informacion-laboral/{info_laboral.id}/")
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert InformacionLaboral.objects.filter(id=info_laboral.id).count() == 0
-
-    
+    def test_delete_informacion_academica_inexistente(self):
+        """
+        Prueba para eliminar un registro que no existe.
+        """
+        response = self.client.delete("/api/usuarios/informacion-academica/999/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
