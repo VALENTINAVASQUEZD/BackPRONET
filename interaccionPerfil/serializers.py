@@ -1,6 +1,8 @@
+from django.forms import ValidationError
 from rest_framework import serializers
 from usuarios.models import PerfilUsuario
 from .models import validar_edad_minima
+
 
 class EditarPerfilSerializer(serializers.ModelSerializer):
     class Meta:

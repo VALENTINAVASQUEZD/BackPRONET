@@ -135,15 +135,13 @@ class InformacionAcademicaAPIView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
-    def post(self, request, id=None):  # Cambia `user_id` por `id`
+    def post(self, request, id=None):
         try:
-            # Buscar el usuario por el `id` proporcionado en la URL
             user = User.objects.get(id=id)
         except User.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            # Crear la información académica asociada al `id` proporcionado
             info_academica = InformacionAcademica.objects.create(user=user, **request.data)
             serializer = InformacionAcademicaSerializer(info_academica)
 

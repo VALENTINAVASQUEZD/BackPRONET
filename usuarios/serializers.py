@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import PerfilUsuario, InformacionLaboral, InformacionAcademica
