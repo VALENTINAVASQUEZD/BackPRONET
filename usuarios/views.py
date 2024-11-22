@@ -110,27 +110,39 @@ class PerfilUsuarioAPIView(APIView):
         
 class InformacionAcademicaAPIView(APIView):
     permission_classes = [AllowAny]
-    def get(self, request):
-        user = request.user
-        if user.is_anonymous:
-            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
 
+    def get(self, request, user_id=None):
         try:
+            # Intentamos obtener al usuario por el ID proporcionado en la URL
+            user = User.objects.get(id=user_id)
+
+            # Filtramos la información académica asociada a ese usuario
             info_academica = InformacionAcademica.objects.filter(user=user)
+
+            # Si no se encuentra información académica, respondemos con un 404
             if not info_academica.exists():
                 return Response({"error": "Información académica no encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
+            # Serializamos los datos y respondemos con la información académica
             serializer = InformacionAcademicaSerializer(info_academica, many=True)
-            return Response(serializer.data)
-        except InformacionAcademica.DoesNotExist:
-            return Response({"error": "No hay información académica disponible"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request):
-        user = request.user
-        if user.is_anonymous:
-            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
+        except User.DoesNotExist:
+            # Si no se encuentra el usuario, respondemos con un 404
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            # Capturamos cualquier otro error y lo reportamos
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request, user_id=None):
+        try:
+            # Buscar el usuario por el `user_id` proporcionado en la URL
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
+            # Crear la información académica asociada al `user_id` proporcionado
             info_academica = InformacionAcademica.objects.create(user=user, **request.data)
             serializer = InformacionAcademicaSerializer(info_academica)
 
@@ -140,6 +152,7 @@ class InformacionAcademicaAPIView(APIView):
             }, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
