@@ -9,4 +9,5 @@ urlpatterns = [
     path('listar/', ListarUsuariosAPIView.as_view(), name='listar_usuarios'),
     path('informacion-academica/', InformacionAcademicaAPIView.as_view(), name='informacion_academica'),
     path('informacion-laboral/', InformacionLaboralAPIView.as_view(), name='informacion_laboral'),
+    path('listar/informacion-laboral/<int:user_id>/', InformacionLaboralAPIView.as_view(), name='informacion-laboral'), #get
 ]

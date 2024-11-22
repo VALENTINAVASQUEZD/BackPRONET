@@ -29,12 +29,10 @@ class LoginAPIView(APIView):
                 password=serializer.validated_data['password']
             )
             if user:
-                # Obtener datos del perfil asociado
                 perfil = user.perfilusuario
                 
-                # Respuesta con información detallada, incluyendo el ID
                 return Response({
-                    "id": user.id,  # Incluye el ID del usuario
+                    "id": user.id,
                     "username": user.username,
                     "email": user.email,
                     "nombre": perfil.nombre,
@@ -56,17 +54,15 @@ class ListarUsuariosAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PerfilUsuarioAPIView(APIView):
-    permission_classes = [AllowAny]  # Permitir acceso sin autenticación
+    permission_classes = [AllowAny]
 
     def get(self, request, user_id):
         try:
-            # Buscar al usuario por ID
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            # Buscar el perfil relacionado
             perfil = PerfilUsuario.objects.get(user=user)
             return Response({
                 "id": user.id,
@@ -145,30 +141,42 @@ class InformacionAcademicaAPIView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
+
 class InformacionLaboralAPIView(APIView):
-    permission_classes = [AllowAny]
 
-    def get(self, request):
-        user = request.user
-        if user.is_anonymous:
-            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
-
+    def get(self, request, user_id=None):
         try:
+            # Intentamos obtener al usuario por el ID
+            user = User.objects.get(id=user_id)
+
+            # Filtramos la información laboral asociada a ese usuario
             info_laboral = InformacionLaboral.objects.filter(user=user)
+
+            # Si no se encuentra información laboral, respondemos con un 404
             if not info_laboral.exists():
                 return Response({"error": "Información laboral no encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
+            # Serializamos los datos y respondemos con la información laboral
             serializer = InformacionLaboralSerializer(info_laboral, many=True)
-            return Response(serializer.data)
-        except InformacionLaboral.DoesNotExist:
-            return Response({"error": "No hay información laboral disponible"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request):
-        user = request.user
-        if user.is_anonymous:
-            return Response({"error": "Se requiere autenticación"}, status=status.HTTP_401_UNAUTHORIZED)
+        except User.DoesNotExist:
+            # Si no se encuentra el usuario, respondemos con un 404
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            # Capturamos cualquier otro error y lo reportamos
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request, user_id=None):
+        try:
+            # Buscar el usuario por el `user_id` proporcionado en la URL
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
+            # Crear la información laboral asociada al `user_id` proporcionado
             info_laboral = InformacionLaboral.objects.create(user=user, **request.data)
             serializer = InformacionLaboralSerializer(info_laboral)
 
