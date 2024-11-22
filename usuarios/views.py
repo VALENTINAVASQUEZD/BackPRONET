@@ -134,15 +134,16 @@ class InformacionAcademicaAPIView(APIView):
             # Capturamos cualquier otro error y lo reportamos
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def post(self, request, user_id=None):
+    
+    def post(self, request, id=None):  # Cambia `user_id` por `id`
         try:
-            # Buscar el usuario por el `user_id` proporcionado en la URL
-            user = User.objects.get(id=user_id)
+            # Buscar el usuario por el `id` proporcionado en la URL
+            user = User.objects.get(id=id)
         except User.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            # Crear la información académica asociada al `user_id` proporcionado
+            # Crear la información académica asociada al `id` proporcionado
             info_academica = InformacionAcademica.objects.create(user=user, **request.data)
             serializer = InformacionAcademicaSerializer(info_academica)
 
@@ -154,6 +155,35 @@ class InformacionAcademicaAPIView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+    def put(self, request, user_id=None):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # Buscar la información académica existente
+            info_academica = InformacionAcademica.objects.get(user=user)
+
+            # Validar los datos recibidos
+            serializer = InformacionAcademicaSerializer(info_academica, data=request.data, partial=True)
+
+            # Verificamos si los datos son válidos
+            if serializer.is_valid():
+                # Guardamos los datos validados
+                serializer.save()
+
+                return Response({
+                    "mensaje": "Información académica actualizada exitosamente",
+                    **serializer.data
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        except InformacionAcademica.DoesNotExist:
+            return Response({"error": "Información académica no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class InformacionLaboralAPIView(APIView):

@@ -7,8 +7,9 @@ urlpatterns = [
     path('perfil/', PerfilUsuarioAPIView.as_view(), name='perfil_usuario'),
     path('perfil/<int:user_id>/', PerfilUsuarioAPIView.as_view(), name='perfil_usuario_by_id'),
     path('listar/', ListarUsuariosAPIView.as_view(), name='listar_usuarios'),
-    path('informacion-academica/', InformacionAcademicaAPIView.as_view(), name='informacion_academica'),
+    path('informacion-academica/<int:id>/', InformacionAcademicaAPIView.as_view(), name='informacion_academica'),
     path('listar/informacion-academica/<int:user_id>/', InformacionAcademicaAPIView.as_view(), name='informacion_academica'),
+    path('actualizar/informacion-academica/<int:user_id>/', InformacionAcademicaAPIView.as_view(), name='informacion_academica'),
     path('informacion-laboral/', InformacionLaboralAPIView.as_view(), name='informacion_laboral'),
     path('listar/informacion-laboral/<int:user_id>/', InformacionLaboralAPIView.as_view(), name='informacion-laboral'), #get
 ]
