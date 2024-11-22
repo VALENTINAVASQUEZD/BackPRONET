@@ -29,20 +29,24 @@ class LoginAPIView(APIView):
                 password=serializer.validated_data['password']
             )
             if user:
+                # Obtener datos del perfil asociado
                 perfil = user.perfilusuario
+                
+                # Respuesta con información detallada, incluyendo el ID
                 return Response({
-                    "mensaje": "Login exitoso",
-                    "id": user.id,
+                    "id": user.id,  # Incluye el ID del usuario
                     "username": user.username,
                     "email": user.email,
                     "nombre": perfil.nombre,
                     "apellido": perfil.apellido,
-                    "fecha_nacimiento": perfil.fecha_nacimiento
+                    "fecha_nacimiento": perfil.fecha_nacimiento,
+                    "mensaje": "Login exitoso",
                 })
-            return Response(
-                {"error": "Credenciales inválidas"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+            else:
+                return Response(
+                    {"error": "Credenciales inválidas"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ListarUsuariosAPIView(APIView):
@@ -52,25 +56,29 @@ class ListarUsuariosAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PerfilUsuarioAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  # Permitir acceso sin autenticación
 
-    def get(self, request, user_id=None):
-        if user_id:
-            try:
-                user = User.objects.get(id=user_id)
-            except User.DoesNotExist:
-                return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        else:
-            user = request.user
-            if user.is_anonymous:
-                return Response({"error": "Se requiere ID de usuario"}, status=status.HTTP_400_BAD_REQUEST)
-        
+    def get(self, request, user_id):
         try:
+            # Buscar al usuario por ID
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # Buscar el perfil relacionado
             perfil = PerfilUsuario.objects.get(user=user)
-            serializer = UsuarioSerializer(user)
-            return Response(serializer.data)
+            return Response({
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "nombre": perfil.nombre,
+                "apellido": perfil.apellido,
+                "fecha_nacimiento": perfil.fecha_nacimiento,
+            }, status=status.HTTP_200_OK)
         except PerfilUsuario.DoesNotExist:
             return Response({"error": "Perfil no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
 
     def put(self, request, user_id=None):
         if user_id:
