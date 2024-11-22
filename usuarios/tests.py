@@ -2,8 +2,10 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework import status
-from .models import PerfilUsuario
+from .models import PerfilUsuario,InformacionAcademica, InformacionLaboral
 from datetime import date
+from .serializers import InformacionAcademicaSerializer, InformacionLaboralSerializer
+
 
 class UsuariosTests(TestCase):
     def setUp(self):
@@ -64,8 +66,10 @@ class UsuariosTests(TestCase):
         self.assertTrue(len(response.data) > 0)
 
     def test_perfil_usuario(self):
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get('/api/usuarios/perfil/')
+       # self.client.force_authenticate(user=self.user)
+        response = self.client.get('/api/usuarios/perfil/12')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], 'existinguser')
         self.assertEqual(response.data['nombre'], 'Existing')
+
+
