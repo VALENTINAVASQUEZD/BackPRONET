@@ -1,7 +1,16 @@
 #environments
-.env
+# Ignorar archivos de base de datos
+db.sqlite3
+
+# Ignorar archivos y carpetas del entorno virtual
 .venv
 env/
 venv/
 ENV/
+.env
+
+# Ignorar archivos de bytecode de Python
+__pycache__/
+*.pyc
+*.pyo
 
